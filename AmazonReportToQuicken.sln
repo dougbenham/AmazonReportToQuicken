@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32002.261
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AmazonReportToQuicken", "AmazonReportToQuicken.csproj", "{7680A435-891F-404E-852B-FBE1F4BC83F9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7680A435-891F-404E-852B-FBE1F4BC83F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7680A435-891F-404E-852B-FBE1F4BC83F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7680A435-891F-404E-852B-FBE1F4BC83F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7680A435-891F-404E-852B-FBE1F4BC83F9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AE5011A2-4BE8-45BE-82ED-FA3883D69BE0}
+	EndGlobalSection
+EndGlobal
