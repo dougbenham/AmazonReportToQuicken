@@ -29,7 +29,7 @@ namespace AmazonReportToQuicken
 
                 // orders have no unique key (even [order id, shipment date] can have duplicates)
                 // sometimes there are even 2+ order records for a single item record (when purchasing quantity is 2+)
-                var orderRecords = await ParseAsync<OrderRecord>(AmazonReportsPath + "2021 - Orders.csv");
+                var orderRecords = (await ParseAsync<OrderRecord>(AmazonReportsPath + "2021 - Orders.csv")).Concat(await ParseAsync<OrderRecord>(AmazonReportsPath + "2022 - Orders.csv")).ToList();
                 var orders = orderRecords.Select(p => p.OrderId).Distinct().ToDictionary(i => i, i => new Order() { OrderId = i });
                 var ordersByShipmentDate = orderRecords.GroupBy(p => p.ShipmentDate).ToDictionary(g => g.Key);
                 var ordersByDay = orderRecords
@@ -44,7 +44,7 @@ namespace AmazonReportToQuicken
                         return r;
                     });
 
-                var itemRecords = await ParseAsync<ItemRecord>(AmazonReportsPath + "2021 - Items.csv");
+                var itemRecords = (await ParseAsync<ItemRecord>(AmazonReportsPath + "2021 - Items.csv")).Concat(await ParseAsync<ItemRecord>(AmazonReportsPath + "2022 - Items.csv")).ToList();
                 var itemsByDay = itemRecords
                     .GroupBy(p => new OrderIdAndDateKey() { Date = p.ShipmentDate, OrderId = p.OrderId })
                     .ToDictionary(g => g.Key, g =>
@@ -72,7 +72,7 @@ namespace AmazonReportToQuicken
                     }
                 }
 
-                var refundRecords = await ParseAsync<RefundRecord>(AmazonReportsPath + "2021 - Refunds.csv");
+                var refundRecords = (await ParseAsync<RefundRecord>(AmazonReportsPath + "2021 - Refunds.csv")).Concat(await ParseAsync<RefundRecord>(AmazonReportsPath + "2022 - Refunds.csv")).ToList();
                 var refundsByRefundDate = refundRecords.GroupBy(p => p.RefundDate).ToDictionary(g => g.Key);
                 refundRecords.ForEach(r =>
                 {
@@ -120,7 +120,7 @@ namespace AmazonReportToQuicken
                                     if (!refund.Used && refund.ItemTotal == transaction.Amount)
                                     {
                                         refund.Used = true;
-                                        //if (string.IsNullOrEmpty(transaction.Memo))
+                                        if (string.IsNullOrEmpty(transaction.Memo))
                                             transaction.Memo = refund.GetMemo();
                                         found = true;
                                         break;
@@ -169,7 +169,7 @@ namespace AmazonReportToQuicken
                                         order.Used = true;
                                         if (order.Match != null)
                                             order.Match.Used = true;
-                                        //if (string.IsNullOrEmpty(transaction.Memo))
+                                        if (string.IsNullOrEmpty(transaction.Memo))
                                             transaction.Memo = order.GetMemo();
                                         found = true;
                                         break;
@@ -185,13 +185,14 @@ namespace AmazonReportToQuicken
                                                 child.Match.Used = true;
                                         }
 
-                                        //if (string.IsNullOrEmpty(transaction.Memo))
-                                        //    transaction.Memo = unusedChildren.Length + "]" + string.Join(", ", unusedChildren.Select(r => r.GetMemo()));
-                                        transaction.Memo = order.OrderId;
-                                        transaction.ClearSplits();
-                                        foreach (var child in unusedChildren)
+                                        if (string.IsNullOrEmpty(transaction.Memo))
                                         {
-                                            transaction.AddSplit(-child.TotalCharged, child.GetMemo());
+                                            transaction.Memo = order.OrderId;
+                                            transaction.ClearSplits();
+                                            foreach (var child in unusedChildren)
+                                            {
+                                                transaction.AddSplit(-child.TotalCharged, child.GetMemo());
+                                            }
                                         }
 
                                         found = true;
@@ -277,9 +278,9 @@ namespace AmazonReportToQuicken
                 }
                 
                 await WriteQifAsync(QuickenResultsPath, qif);
-                await WriteAsync<OrderRecord, OrderMap>(AmazonReportsPath + "2021 - Orders - Leftover.csv", orderRecords.Where(i => !i.Used));
-                await WriteAsync<ItemRecord, ItemMap>(AmazonReportsPath + "2021 - Items - Leftover.csv", itemRecords.Where(i => !i.Used));
-                await WriteAsync<RefundRecord>(AmazonReportsPath + "2021 - Refunds - Leftover.csv", refundRecords.Where(i => !i.Used));
+                await WriteAsync<OrderRecord, OrderMap>(AmazonReportsPath + "2022 - Orders - Leftover.csv", orderRecords.Where(i => !i.Used));
+                await WriteAsync<ItemRecord, ItemMap>(AmazonReportsPath + "2022 - Items - Leftover.csv", itemRecords.Where(i => !i.Used));
+                await WriteAsync<RefundRecord>(AmazonReportsPath + "2022 - Refunds - Leftover.csv", refundRecords.Where(i => !i.Used));
             }
             finally
             {
